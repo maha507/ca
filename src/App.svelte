@@ -20,12 +20,22 @@
 	  const responseData = await response.json();
 	  jsonData = responseData.data;
 	}
-  
 	function handleTitleClick(candidate) {
-	  selectedCandidate = candidate;
-	  editing = true;
-	  dispatch("showCandidatePopup");
-	}
+  if (candidate) {
+    selectedCandidate = candidate;
+    editing = true;
+  } else {
+    selectedCandidate = {
+      firstName: "",
+      surname: "",
+      email: "",
+      mobile: ""
+    };
+    editing = false;
+  }
+  dispatch("showCandidatePopup");
+}
+
   
 	function handleFieldChange(event, field) {
 	  selectedCandidate[field] = event.target.value;
@@ -36,7 +46,7 @@
     // Send the updated candidate data to the API
     const apiUrl = `https://api.recruitly.io/api/candidate/?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
     const response = await fetch(apiUrl, {
-      method: 'POST',
+      method: 'POSt',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -72,7 +82,30 @@
   editing = false;
 }
 
-		
+function handleDeleteClick(candidate) {
+  const confirmed = confirm("Are you sure you want to delete this candidate?");
+  if (confirmed) {
+    deleteCandidate(candidate);
+  }
+}
+
+
+async function deleteCandidate(candidate) {
+  const apiUrl = `https://api.recruitly.io/api/candidate/${candidate.id}?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
+  const response = await fetch(apiUrl, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (response.ok) {
+    // Remove the deleted candidate from the jsonData array
+    jsonData = jsonData.filter(c => c.id !== candidate.id);
+    selectedCandidate = null;
+  }
+}
+	
   </script>
   
   <style>
@@ -109,36 +142,46 @@
 	  padding: 5px;
 	  margin-bottom: 10px;
 	}
-  	.popup-content button {
+  
+	.popup-content button {
 	  margin-top: 20px;
 	}
   </style>
   
   <main>
 	{#if tableVisible}
-	<table class="table">
-	  <thead class="thead-light">
-		<tr>
-		  <th>First Name</th>
-		  <th>Surname</th>
-		  <th>Email</th>
-		  <th>Mobile</th>
-		</tr>
-	  </thead>
-	  <tbody>
-		{#each jsonData as candidate}
-		<tr>
-		  <td>
-			<a href="#" on:click|preventDefault={() => handleTitleClick(candidate)}>{candidate.firstName}</a>
+  <table class="table">
+    <thead class="thead-light">
+      <tr>
+        <th>First Name</th>
+        <th>Surname</th>
+        <th>Email</th>
+        <th>Mobile</th>
+      </tr>
+      <tr>
+        <th colspan="4" style="text-align: right;">
+          <button class="btn btn-primary" on:click={() => handleTitleClick(null)}>Add Candidate</button>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each jsonData as candidate}
+      <tr>
+        <td>
+          <a href="#" on:click|preventDefault={() => handleTitleClick(candidate)}>{candidate.firstName}</a>
+        </td>
+        <td>{candidate.surname}</td>
+        <td>{candidate.email}</td>
+        <td>{candidate.mobile}</td>
+		<td>
+			<button class="btn btn-danger btn-sm" on:click|preventDefault={() => handleDeleteClick(candidate)}>Delete</button>
 		  </td>
-		  <td>{candidate.surname}</td>
-		  <td>{candidate.email}</td>
-		  <td>{candidate.mobile}</td>
-		</tr>
-		{/each}
-	  </tbody>
-	</table>
-	{/if}
+      </tr>
+      {/each}
+    </tbody>
+  </table>
+{/if}
+
   </main>
   
   {#if selectedCandidate}
