@@ -36,7 +36,7 @@
     // Send the updated candidate data to the API
     const apiUrl = `https://api.recruitly.io/api/candidate/?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
     const response = await fetch(apiUrl, {
-      method: 'POSt',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -109,8 +109,7 @@
 	  padding: 5px;
 	  margin-bottom: 10px;
 	}
-  
-	.popup-content button {
+  	.popup-content button {
 	  margin-top: 20px;
 	}
   </style>
