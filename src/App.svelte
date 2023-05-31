@@ -7,7 +7,9 @@
 	let tableVisible = false;
 	let selectedCandidate = null;
 	let editing = false;
-  
+	let cvFile = null;
+	let cvPopupVisible = false;
+
 	const dispatch = createEventDispatcher();
   
 	onMount(async () => {
@@ -105,7 +107,32 @@ async function deleteCandidate(candidate) {
     selectedCandidate = null;
   }
 }
-	
+function handleCVChange(event) {
+  cvFile = event.target.files[0];
+}
+
+async function handleCVSubmit() {
+  if (cvFile) {
+    const formData = new FormData();
+    formData.append('cv', cvFile);
+
+    const apiUrl = `https://api.recruitly.io/api/candidate/${selectedCandidate.id}/upload-cv?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      // CV uploaded successfully
+      // You can add any additional logic here
+      alert('CV submitted successfully!');
+    }
+  }
+
+  cvPopupVisible = false; // Close the CV popup window
+}
+
+
   </script>
   
   <style>
@@ -146,6 +173,15 @@ async function deleteCandidate(candidate) {
 	.popup-content button {
 	  margin-top: 20px;
 	}
+	input[type="file"] {
+  display: block;
+  margin-bottom: 10px;
+}
+
+button[type="submit"] {
+  margin-top: 10px;
+}
+
   </style>
   
   <main>
@@ -175,6 +211,7 @@ async function deleteCandidate(candidate) {
         <td>{candidate.email}</td>
         <td>{candidate.mobile}</td>
 		<td>
+			<button class="btn btn-primary" on:click={() => (cvPopupVisible = true)}>Submit CV</button>
 			<button class="btn btn-danger btn-sm" on:click|preventDefault={() => handleDeleteClick(candidate)}>Delete</button>
 		  </td>
       </tr>
@@ -202,4 +239,13 @@ async function deleteCandidate(candidate) {
 	</div>
   </div>
   {/if}
-  
+  {#if cvPopupVisible}
+<div class="popup">
+  <div class="popup-content">
+    <h2>Submit CV</h2>
+    <input type="file" id="cv" on:change={handleCVChange} accept=".pdf,.doc,.docx" />
+    <button class="btn btn-primary" on:click={handleCVSubmit}>Submit</button>
+    <button class="btn btn-secondary" on:click={() => (cvPopupVisible = false)}>Close</button>
+  </div>
+</div>
+{/if}
