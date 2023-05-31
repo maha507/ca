@@ -153,16 +153,17 @@ async function deleteCandidate(candidate) {
   <table class="table">
     <thead class="thead-light">
       <tr>
+        <th colspan="4" style="text-align: right;">
+          <button class="btn btn-primary" on:click={() => handleTitleClick(null)}>Add Candidate</button>
+        </th>
+      </tr>
+      <tr>
         <th>First Name</th>
         <th>Surname</th>
         <th>Email</th>
         <th>Mobile</th>
       </tr>
-      <tr>
-        <th colspan="4" style="text-align: right;">
-          <button class="btn btn-primary" on:click={() => handleTitleClick(null)}>Add Candidate</button>
-        </th>
-      </tr>
+     
     </thead>
     <tbody>
       {#each jsonData as candidate}
