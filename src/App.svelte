@@ -1,4 +1,4 @@
-<script>
+<script  src="https://cdn.jsdelivr.net/npm/gridjs@1.2.0/dist/gridjs.production.min.js">
 	import 'bootstrap/dist/css/bootstrap.min.css';
 	import { onMount } from "svelte";
 	import { createEventDispatcher } from "svelte";
@@ -15,6 +15,7 @@
 	onMount(async () => {
 	  await fetchData();
 	  tableVisible = true;
+	  
 	});
   
 	async function fetchData() {
@@ -43,7 +44,8 @@
 	  selectedCandidate[field] = event.target.value;
 	}
   
-	async function handleSaveClick() {
+	async function handleSaveClick(event) {
+		event.preventDefault(); 
   if (editing) {
     // Send the updated candidate data to the API
     const apiUrl = `https://api.recruitly.io/api/candidate/?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
@@ -82,12 +84,14 @@
   // Reset selectedCandidate and editing to their initial values
   selectedCandidate = null;
   editing = false;
+ 
 }
 
 function handleDeleteClick(candidate) {
   const confirmed = confirm("Are you sure you want to delete this candidate?");
   if (confirmed) {
     deleteCandidate(candidate);
+	
   }
 }
 
@@ -112,26 +116,23 @@ function handleCVChange(event) {
 }
 
 async function handleCVSubmit() {
-  if (cvFile) {
-    const formData = new FormData();
-    formData.append('cv', cvFile);
+    if (cvFile) {
+      const formData = new FormData();
+      formData.append('cv', cvFile);
 
-    const apiUrl = `https://api.recruitly.io/api/candidate/${selectedCandidate.id}/upload-cv?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: formData
-    });
+      const apiUrl = `https://api.recruitly.io/api/candidate/${selectedCandidate.id}/upload-cv?apiKey=TEST1236C4CF23E6921C41429A6E1D546AC9535E`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        body: formData
+      });
 
-    if (response.ok) {
-      // CV uploaded successfully
-      // You can add any additional logic here
-      alert('CV submitted successfully!');
+      if (response.ok) {
+        // CV submitted successfully
+        // You can add any additional logic here
+        alert('CV submitted successfully!');
+      }
     }
   }
-
-  cvPopupVisible = false; // Close the CV popup window
-}
-
 
   </script>
   
@@ -185,42 +186,74 @@ button[type="submit"] {
   </style>
   
   <main>
+	<div id="grid"></div>
 	{#if tableVisible}
-  <table class="table">
-    <thead class="thead-light">
-      <tr>
-        <th colspan="4" style="text-align: right;">
-          <button class="btn btn-primary" on:click={() => handleTitleClick(null)}>Add Candidate</button>
-        </th>
-      </tr>
-      <tr>
-        <th>First Name</th>
-        <th>Surname</th>
-        <th>Email</th>
-        <th>Mobile</th>
-      </tr>
-     
-    </thead>
-    <tbody>
-      {#each jsonData as candidate}
-      <tr>
-        <td>
-          <a href="#" on:click|preventDefault={() => handleTitleClick(candidate)}>{candidate.firstName}</a>
-        </td>
-        <td>{candidate.surname}</td>
-        <td>{candidate.email}</td>
-        <td>{candidate.mobile}</td>
-		<td>
-			<button class="btn btn-primary" on:click={() => (cvPopupVisible = true)}>Submit CV</button>
-			<button class="btn btn-danger btn-sm" on:click|preventDefault={() => handleDeleteClick(candidate)}>Delete</button>
-		  </td>
-      </tr>
-      {/each}
-    </tbody>
-  </table>
-{/if}
-
+	  <table class="table">
+		<thead class="thead-light">
+		  <tr>
+			<th colspan="4" style="text-align: right;">
+			  <button class="btn btn-primary" on:click={() => handleTitleClick(null)}>Add Candidate</button>
+			</th>
+		  </tr>
+		  <tr>
+			<th>First Name</th>
+			<th>Surname</th>
+			<th>Email</th>
+			<th>Mobile</th>
+			<th>Actions</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  {#each jsonData as candidate}
+			<tr>
+			  <td>
+				<a href="#" on:click|preventDefault={() => handleTitleClick(candidate)}>{candidate.firstName}</a>
+			  </td>
+			  <td>{candidate.surname}</td>
+			  <td>{candidate.email}</td>
+			  <td>{candidate.mobile}</td>
+			  <td>
+				<button class="btn btn-primary" on:click={() => (cvPopupVisible = true)}>Submit CV</button>
+				<button class="btn btn-danger btn-sm" on:click|preventDefault={() => handleDeleteClick(candidate)}>Delete</button>
+			  </td>
+			</tr>
+		  {/each}
+		</tbody>
+	  </table>
+	{/if}
+  
+	{#if selectedCandidate}
+	  <div class="popup">
+		<div class="popup-content">
+		  <h2>{editing ? 'Edit Candidate' : 'Add Candidate'}</h2>
+		  <form on:submit|preventDefault={handleSaveClick}>
+			<label for="firstName">First Name:</label>
+			<input type="text" id="firstName" bind:value={selectedCandidate.firstName} on:input={(e) => handleFieldChange(e, 'firstName')} />
+			<label for="surname">Surname:</label>
+			<input type="text" id="surname" bind:value={selectedCandidate.surname} on:input={(e) => handleFieldChange(e, 'surname')} />
+			<label for="email">Email:</label>
+			<input type="text" id="email" bind:value={selectedCandidate.email} on:input={(e) => handleFieldChange(e, 'email')} />
+			<label for="mobile">Mobile:</label>
+			<input type="text" id="mobile" bind:value={selectedCandidate.mobile} on:input={(e) => handleFieldChange(e, 'mobile')} />
+			<button class="btn btn-primary" type="submit" on:click={handleSaveClick}>Save</button>
+			<button class="btn btn-secondary" on:click={() => (selectedCandidate = null)}>Close</button>
+		  </form>
+		</div>
+	  </div>
+	{/if}
+  
+	{#if cvPopupVisible}
+	  <div class="popup">
+		<div class="popup-content">
+		  <h2>Submit CV</h2>
+		  <input type="file" id="cv" on:change={handleCVChange} accept=".pdf,.doc,.docx" />
+		  <button class="btn btn-primary" on:click={handleCVSubmit}>Submit</button>
+		  <button class="btn btn-secondary" on:click={() => (cvPopupVisible = false)}>Close</button>
+		</div>
+	  </div>
+	{/if}
   </main>
+  
   
   {#if selectedCandidate}
   <div class="popup">
@@ -240,12 +273,15 @@ button[type="submit"] {
   </div>
   {/if}
   {#if cvPopupVisible}
-<div class="popup">
-  <div class="popup-content">
-    <h2>Submit CV</h2>
-    <input type="file" id="cv" on:change={handleCVChange} accept=".pdf,.doc,.docx" />
-    <button class="btn btn-primary" on:click={handleCVSubmit}>Submit</button>
-    <button class="btn btn-secondary" on:click={() => (cvPopupVisible = false)}>Close</button>
+  <div class="popup">
+    <div class="popup-content">
+      <h2>Submit CV</h2>
+      <input type="file" id="cv" on:change={handleCVChange} accept=".pdf,.doc,.docx" />
+      <button class="btn btn-primary" on:click={() => {
+        handleCVSubmit();
+        cvPopupVisible = false;
+      }}>Submit</button>
+      <button class="btn btn-secondary" on:click={() => (cvPopupVisible = false)}>Close</button>
+    </div>
   </div>
-</div>
 {/if}
