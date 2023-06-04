@@ -1,10 +1,10 @@
 <script>
-  
+
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import 'bootstrap/dist/css/bootstrap.min.css';
   import UploadCV from "./UploadCV.svelte";
-  import EditPopup from "./EditPopup.svelte";
+  
   let jsonData = [];
   let tableVisible = false;
   let selectedCandidate = null;
